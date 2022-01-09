@@ -8,8 +8,6 @@
     "moduleResolution": "node",
     "experimentalDecorators": true,
     "skipLibCheck": true,
-    "outDir": "dist/",
-    "alwaysStrict": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
