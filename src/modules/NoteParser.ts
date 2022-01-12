@@ -1,15 +1,30 @@
-class MarkdownCompilationError {
-  msg: string
+/**
+ * Represents an error that occurs during compilation of unki chunk data.
+ * @constructor
+ * @param {string} message - The error message
+ * @param {string} type - The specific error type
+ * @param {string} rowNumber - The number of line where the error occurs
+ */
+class NoteInputError {
+  message: string
   type: string
-  lineNumber: number
-  constructor(msg: string, type: string, lineNumber: number) {
-    this.msg = msg;
+  rowNumber: number
+  constructor(message: string, type: string, rowNumber: number) {
+    this.message = message;
     this.type = type;
-    this.lineNumber = lineNumber;
+    this.rowNumber = rowNumber;
   }
 }
 
-const MarkdownCompiler = {
+/**
+ * Translates between unki chunk data in markdown format and JS objects. 
+ */
+const NoteParser = {
+  /**
+   * Parse markdown note data into a sequence of chunk objects.
+   * @param {string} content - Markdown note data 
+   * @returns a list of chunk entities
+   */
   getChunks: function (content: string) {
     let rowNumber = 1;
     const rows = content.split("\n");
@@ -18,9 +33,9 @@ const MarkdownCompiler = {
     const getRow: () => string = () => rows[rowNumber - 1];
     while (rowNumber <= rows.length) {
       const chunkHead = getRow().trim().match(discriminator);
-      // 检测到了 Unki chunk 头
+      // chunk head detected
       if (chunkHead) {
-        // 获取 chunk 信息
+        // get chunk info
         const chunkType = chunkHead[1];
         const chunkTitle = chunkHead[3];
         let chunkContent: any;
@@ -40,8 +55,8 @@ const MarkdownCompiler = {
                 }
               }
               const elements: Map<string, Element> = new Map();
-              const getFlowchartError: (message: string) => MarkdownCompilationError = function (msg: string) { // 错误生成器
-                return new MarkdownCompilationError(msg, "Error while compiling Markdown flowchart", rowNumber);
+              const getFlowchartError: (message: string) => NoteInputError = function (msg: string) { // 错误生成器
+                return new NoteInputError(msg, "Error while compiling Markdown flowchart", rowNumber);
               };
               const getElement: (elementTag: string) => Element = function (tag: string) { // 获取元素
                 const elem = elements.get(tag);
@@ -129,8 +144,8 @@ const MarkdownCompiler = {
                   this.children = [];
                 }
               }
-              const err: (message: string) => MarkdownCompilationError = function (msg: string) {
-                return new MarkdownCompilationError
+              const err: (message: string) => NoteInputError = function (msg: string) {
+                return new NoteInputError
                   (msg, "Error while compiling Markdown nested list", rowNumber);
               };
               const nodes: TreeNode[] = [];
@@ -177,7 +192,7 @@ const MarkdownCompiler = {
             })();
             break;
           default:
-            throw new MarkdownCompilationError("Parsing error", `The chunk type "${chunkType}" is not supported`, rowNumber)
+            throw new NoteInputError("Parsing error", `The chunk type "${chunkType}" is not supported`, rowNumber)
         }
         rowNumber++;
         results.push({ title: chunkTitle, content: chunkContent });
@@ -187,4 +202,4 @@ const MarkdownCompiler = {
   }
 }
 
-export default MarkdownCompiler;
+export default NoteParser;
